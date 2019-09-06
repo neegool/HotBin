@@ -12,11 +12,11 @@ IconFull := -33
 NumPut(VarSetCapacity(SHQueryRBInfo, 24, 0), SHQueryRBInfo, "UInt")
 SHQueryRecycleBin := DllCall("GetProcAddress", "Ptr", DllCall("GetModuleHandle", "Str", "Shell32", "Ptr"), "AStr", "SHQueryRecycleBin" . (A_IsUnicode ? "W" : "A"), "Ptr")
 
-GoSub, MakeTray
+GoSub, CreateTray
 SetTimer, UpdateTray
 return
 
-MakeTray:
+CreateTray:
 Menu, Tray, NoIcon
 Menu, Tray, NoStandard
 Menu, Tray, Add, % LangReadLine(1, "Open"), OpenRecycleBin
@@ -43,12 +43,10 @@ UpdateTray:
 DllCall(SHQueryRecycleBin, "Ptr", 0, "Ptr", &SHQueryRBInfo, "Int")
 Bytes := NumGet(SHQueryRBInfo, A_PtrSize, "Int64")
 Total := NumGet(SHQueryRBInfo, A_PtrSize + 8, "Int64")
-Tip := Total . " (" . FormatBytes(Bytes) . ")"
-Menu, Tray, Icon
 Menu, Tray, % Total ? "Enable" : "Disable", 3&
 Menu, Tray, Icon, %IconFile%, % Total ? IconFull : IconEmpty, 1
 Menu, Tray, Icon, 3&, %IconFile%, % Total ? IconFull : IconEmpty
-Menu, Tray, Tip, % Tip
+Menu, Tray, Tip, % Total . " (" . FormatBytes(Bytes) . ")"
 return
 
 +!Q::
