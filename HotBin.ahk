@@ -34,7 +34,7 @@ EmptyRecycleBin:
 FileRecycleEmpty
 return
 
-+!O::
++!R::
 OpenRecycleBin:
 Run, Shell:RecycleBinFolder
 return
