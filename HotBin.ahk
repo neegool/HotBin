@@ -63,9 +63,9 @@ LangReadLine(byref r_LineNumber, byref r_Default)
 
 FormatBytes(byref r_Bytes)
 {
-    static s_Symbols := ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"] 
+    static s_Symbols := ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"] 
     if !r_Bytes
         return "0.00 B"
     n := Floor(Log(r_Bytes) / Log(1024))
-    return Round(r_Bytes / 1024 ** n, 2) . " " . s_Symbols[n]
+    return Round(r_Bytes / 1024 ** n, 2) . " " . s_Symbols[n + 1]
 }
