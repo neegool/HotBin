@@ -2,7 +2,6 @@ ListLines(false)
 ProcessSetPriority("BelowNormal")
 
 KeyHistory(0)
-; REMOVED: #NoEnv
 #SingleInstance Ignore
 
 ;// SHQUERYRBINFO struct. Used for SHQueryRecycleBin().
@@ -60,21 +59,7 @@ FileRecycleEmptyTray(A_ThisMenuItem, A_ThisMenuItemPos, MyMenu)
 
 FileRecycleEmptyWithPrompt()
 {
-    if !SHQueryRecycleBin(0, SHQUERYRBINFO)
-    {
-        bytes := NumGet(SHQUERYRBINFO, A_PtrSize, "Int64")
-        count := NumGet(SHQUERYRBINFO, A_PtrSize + 8, "Int64")
-        if count
-        {
-            If (count = 1)
-                msgResult := MsgBox("Are you sure you want to permanently delete this item?", "Delete File", 52)
-            else
-                msgResult := MsgBox("Are you sure you want to permanently delete these " count " items?", "Delete Multiple Items", 52)
-            
-            if (msgResult = "Yes")
-                FileRecycleEmpty()
-        }
-    }
+    return DllCall("shell32.dll\SHEmptyRecycleBin", "UInt", 0, "Str", "", "UInt", 0x00)
 }
 
 UpdateTray()
@@ -85,26 +70,26 @@ UpdateTray()
         count := NumGet(SHQUERYRBINFO, A_PtrSize + 8, "Int64")
         if count
         {
-            ;// Enable "Empty Recycle Bin" and change the icon to the full bin.
+            ; Enable "Empty Recycle Bin" and change the icon to the full bin.
             Tray.Enable("3&")
             TraySetIcon("shell32", "-33", "1")
-            ; Tray.Icon("3&", "shell32", "-33")
+            Tray.SetIcon("3&", "shell32", "-33")
         }
         else
         {
-            ;// Disable "Empty Recycle Bin" and change the icon to the empty bin.
+            ; Disable "Empty Recycle Bin" and change the icon to the empty bin.
             Tray.Disable("3&")
             TraySetIcon("shell32", "-32", "1")
-            ; Tray.Icon("3&", "shell32", "-32")
+            Tray.SetIcon("3&", "shell32", "-32")
         }
         A_IconTip := Format("{}`n{}", count, FormatBytes(&bytes))
     }
 return
-} ; V1toV2: Added bracket before function
+}
 
 FormatBytes(&r_bytes)
 {
-    ;// Format a number of bytes to a human-readable string.
+    ; Format a number of bytes to a human-readable string.
     static s_symbols := ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"]
     if !r_bytes
         return "0.00 B"
@@ -114,20 +99,18 @@ FormatBytes(&r_bytes)
 
 LoadString(&r_instance, r_id)
 {
-    ;// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringa
-    ;// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringw
+    ; https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringa
+    ; https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadstringwa
     static s_ptr := DllCall("GetProcAddress", "Ptr", DllCall("GetModuleHandle", "Str", "user32", "Ptr"), "AStr", "LoadString" . (1 ? "W" : "A"), "Ptr")
-    VarSetStrCapacity(&string, 160 << 1)        ,DllCall(s_ptr, "Ptr", r_instance, "UInt", r_id, "Str", string, "Int", 160, "Int") ; V1toV2: if 'string' is NOT a UTF-16 string, use 'string := Buffer(160 << A_IsUnicode)'
+    VarSetStrCapacity(&string, 160 << 1)
+    DllCall(s_ptr, "Ptr", r_instance, "UInt", r_id, "Str", string, "Int", 160, "Int")
     return string
 }
 
 SHQueryRecycleBin(r_root, r_SHQUERYRBINFO)
 {
-    ;// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shqueryrecyclebina
-    ;// https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shqueryrecyclebinw
+    ; https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shqueryrecyclebina
+    ; https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shqueryrecyclebinw
     static s_ptr := DllCall("GetProcAddress", "Ptr", DllCall("GetModuleHandle", "Str", "shell32", "Ptr"), "AStr", "SHQueryRecycleBin" . (1 ? "W" : "A"), "Ptr")
     return DllCall(s_ptr, "Ptr", r_root, "Ptr", r_SHQUERYRBINFO, "Int")
 }
-
-
-
