@@ -100,7 +100,7 @@ UpdateTray()
         A_IconTip := Format("{}`n{}", count, FormatBytes(&bytes))
     }
 return
-} ; V1toV2: Added bracket before function
+}
 
 FormatBytes(&r_bytes)
 {
